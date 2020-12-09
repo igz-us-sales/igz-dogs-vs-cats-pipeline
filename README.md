@@ -1,3 +1,27 @@
+- Components
+    - CSV with S3 paths and classifications
+    - DownloadS3
+        - Download data from CSV
+        - Append local paths to CSV
+    - PrepData
+        - Load images from local paths via CSV
+        - Perform image transformations and splits 
+        - Output data loaders (train, validation, test)
+    - TrainModel
+        - Input CSV
+        - Output model to V3IO
+    - EvalMmodel
+        - Input CS
+    - DeployModel
+        - Model endpoint
+    - UploadS3
+        - Upload model
+        - Upload model metrics
+
+
+
+
+
 The flow should be:
 - Upload a few images
 - Post fs location to stream
@@ -16,6 +40,7 @@ DataLoader:
 PyTorch:
 - https://www.learnopencv.com/pytorch-for-beginners-image-classification-using-pre-trained-models/
 - https://github.com/spmallick/learnopencv/blob/master/Image-classification-pre-trained-models/Image_Classification_using_pre_trained_models.ipynb
+
 Dogs vs Cats:
 - https://wtfleming.github.io/2020/04/12/pytorch-cats-vs-dogs-part-3/
 - https://www.kaggle.com/jaeboklee/pytorch-cat-vs-dog
