@@ -16,9 +16,13 @@ def init_functions(functions: dict, project=None, secrets=None):
     
     # Mount V3IO filesystem
     for fn in functions.values():
+        fn.apply(mount_v3io())
         fn.apply(mount_v3io(name="csv",
                             remote=config["csv"]["s3_images_csv_remote_path"],
                             mount_path=config["csv"]["s3_images_csv_mount_path"]))
+        fn.apply(mount_v3io(name="data",
+                            remote=config["data"]["remote_download_path"],
+                            mount_path=config["data"]["mount_download_path"]))
     
     # Set env var configuation for S3 functions
     s3_functions = ['download-s3']
@@ -34,14 +38,17 @@ def init_functions(functions: dict, project=None, secrets=None):
 )
 def kfpipeline(bucket_name:str = config['aws']['bucket_name'],
                s3_images_csv:str = f'{config["csv"]["s3_images_csv_mount_path"]}/{config["csv"]["s3_images_csv"]}',
-               data_download_path:str = config['data']['download_path'],
+               data_download_path:str = config['data']['mount_download_path'],
                download_data:bool=True):    
     
     with dsl.Condition(download_data==True):
         inputs = {"bucket_name" : bucket_name,
                   "s3_images_csv" : s3_images_csv,
                   "data_download_path" : data_download_path}
-        download_s3 = funcs['download-s3'].as_step(handler="handler", inputs=inputs, outputs=["s3_image_csv_local"])
+        download_s3 = funcs['download-s3'].as_step(handler="handler",
+                                                   inputs=inputs,
+                                                   outputs=["s3_image_csv_local"],
+                                                   verbose=True)
         data_local = download_s3.outputs['s3_image_csv_local']
     
     with dsl.Condition(download_data==False):

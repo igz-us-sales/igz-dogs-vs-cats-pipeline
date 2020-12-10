@@ -1,4 +1,4 @@
-name: dogs-vs-cats-pipeline
+name: dogs-vs-cats-demo
 functions:
 - url: DownloadS3.ipynb
   name: download-s3
