@@ -4,6 +4,10 @@ functions:
   name: download-s3
   kind: job
   image: docker-registry.default-tenant.app.us-sales.iguazio-cd2.com:80/s3_image
+- url: PrepData.ipynb
+  name: prep-data
+  kind: job
+  image: docker-registry.default-tenant.app.us-sales.iguazio-cd2.com:80/s3_image
 workflows:
 - name: main
   path: workflow.py

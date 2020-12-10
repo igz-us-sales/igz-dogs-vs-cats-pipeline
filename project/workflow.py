@@ -39,17 +39,21 @@ def init_functions(functions: dict, project=None, secrets=None):
 def kfpipeline(bucket_name:str = config['aws']['bucket_name'],
                s3_images_csv:str = f'{config["csv"]["s3_images_csv_mount_path"]}/{config["csv"]["s3_images_csv"]}',
                data_download_path:str = config['data']['mount_download_path'],
-               download_data:bool=True):    
+               download_data:bool=False,
+               debug_logs:bool=True):    
     
-    with dsl.Condition(download_data==True):
-        inputs = {"bucket_name" : bucket_name,
-                  "s3_images_csv" : s3_images_csv,
-                  "data_download_path" : data_download_path}
-        download_s3 = funcs['download-s3'].as_step(handler="handler",
-                                                   inputs=inputs,
-                                                   outputs=["s3_image_csv_local"],
-                                                   verbose=True)
-        data_local = download_s3.outputs['s3_image_csv_local']
+    # Download data
+    inputs = {"bucket_name" : bucket_name,
+              "s3_images_csv" : s3_images_csv,
+              "data_download_path" : data_download_path,
+              "download_data" : download_data}
+    download_s3 = funcs['download-s3'].as_step(handler="handler",
+                                               inputs=inputs,
+                                               outputs=["s3_image_csv_local"],
+                                               verbose=debug_logs)
     
-    with dsl.Condition(download_data==False):
-        data_local = s3_images_csv
+    # Prep Data
+    inputs = {"local_images_csv" : download_s3.outputs['s3_image_csv_local']}
+    prep_data = funcs['prep-data'].as_step(handler="handler",
+                                           inputs=inputs,
+                                           verbose=debug_logs)
