@@ -1,7 +1,7 @@
 # Dogs vs Cats Pipeline with Kubeflow, MLRun, PyTorch, and S3
 ## Quick Links
 1. [Getting Started](#Getting-Started)
-2. [Inputs/Outputs](#Inputs/Outputs)
+2. [Inputs and Outputs](#Inputs-and-Outputs)
 3. [Components Overview](#Components-Overview)
 4. [Config Parameters Overview](#Config-Parameters-Overview)
 
@@ -11,7 +11,7 @@
 3. Update `config.yaml` with paths and add AWS access keys. Config parameters will be explained below.
 4. Run `DogsVsCatsPipeline.ipynb`, uncommenting any cells that are commented. Once the commented cells have been run once, they can be re-commented.
 
-## Inputs/Outputs
+## Inputs and Outputs
 ### Inputs
 - `*.csv`: File with paths to images in S3.
 
