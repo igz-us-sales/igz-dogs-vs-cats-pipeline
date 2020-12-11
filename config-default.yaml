@@ -1,0 +1,38 @@
+project:
+    name: 'dogs-vs-cats-demo'
+    container: 'bigdata'
+    debug_logs: true
+docker:
+    s3_image: "s3_image"
+csv:
+    s3_images_csv_remote_path: "users/nick/igz_repos/igz-dogs-vs-cats-pipeline/data"
+    s3_images_csv_mount_path: "/csv"
+#     s3_images_csv: "s3_images_sample.csv"
+    s3_images_csv: "s3_images_sample_local.csv"
+data:
+    remote_download_path: "bigdata/dogs_vs_cats_sample"
+    mount_download_path: "/data"
+    download_data: false
+    batch_size: 32
+    img_dimensions: 224
+    train_pct: 0.6
+    val_pct: 0.2
+    test_pct: 0.2
+aws:
+    bucket_name: <BUCKET_NAME>
+    aws_access_key_id: <AWS_ACCESS_KEY_ID>
+    aws_secret_access_key: <AWS_SECRET_ACCESS_KEY>
+    aws_default_region: "us-west-2"
+    results_upload_path: "dogs_vs_cats/results"
+train:
+    epochs: 1
+    lr:
+    - 0.001
+    - 0.005
+    - 0.01
+    layer_size:
+    - 256
+    - 512
+    - 1024
+    device: "cpu"
+    hyper_param_runs: 2
