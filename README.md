@@ -1,4 +1,10 @@
 # Dogs vs Cats Pipeline with Kubeflow, MLRun, PyTorch, and S3
+## Quick Links
+1. [Getting Started](#Getting-Started)
+2. [Inputs/Outputs](#Inputs/Outputs)
+3. [Components Overview](#Components-Overview)
+4. [Config Parameters Overview](#Config-Parameters-Overview)
+
 ## Getting Started
 1. Upload Dogs vs Cats dataset to desired S3 location. Dataset can be found [here](https://github.com/igz-us-sales/dogs_vs_cats_data/tree/master/data).
 2. Copy `config-default.yaml` as `config.yaml`.
@@ -48,6 +54,44 @@
 - Creates/uploads `prep_model.py` with code snippet to load PyTorch model using `model_state_dict.pth`.
 
 ## Config Parameters Overview
+### Project
 |Parameter|Type| Description|
 |--|--|--|
-| asdf | asdf |asdf  |
+| `name` | string | Name of MLRun project.  |
+| `container` | string | Name of V3IO container where data will be downloaded/accessed/uploaded.  |
+| `debug_logs` | string | Flag to print debug messages in components.  |
+
+### Docker
+|Parameter|Type| Description|
+|--|--|--|
+| `s3_image` | string | Name of custom Docker image to be build within platform.  |
+
+### Data
+|Parameter|Type| Description|
+|--|--|--|
+| `remote_download_path` | string | Path on local filesystem that S3 data will be downloaded to. Used by downstream components to read images.  |
+| `mount_download_path` | string | Path on container filesystem that `remote_download_path` will mounted to. Allows containers to access data from local filesystem. |
+| `download_data` | bool | Flag to bypass S3 download (given that input `.csv` has local file paths already) for the sake of limiting transfers. |
+| `batch_size` | int | Size of batches created by DataLoader to load into model. |
+| `img_dimensions` | int | Size to resize images to during image transformation. Model needs a square image (`img_dimensions` x `img_dimensions`). |
+| `train_pct` | float | Percentage of data to be allocated to training set. |
+| `val_pct` | float | Percentage of data to be allocated to validation set. |
+| `test_pct` | float | Percentage of data to be allocated to testing set. |
+
+### AWS
+|Parameter|Type| Description|
+|--|--|--|
+| `bucket_name` | string | Name of S3 bucket where data is stored and results will be written.  |
+| `aws_access_key_id` | string | AWS_ACCESS_KEY_ID for authentication.  |
+| `aws_secret_access_key` | string | AWS_SECRET_ACCESS_KEY for authentication.  |
+| `aws_default_region` | string | AWS region where bucket is located.  |
+| `results_upload_path` | string | Path in S3 bucket where results files will be uploaded.  |
+
+### Train
+|Parameter|Type| Description|
+|--|--|--|
+| `epochs` | int | Number of epochs to train model.  |
+| `lr` | list(float) | List of learning rates for hyper-parameter tuning. Used in training optimizer.  |
+| `layer_size` | list(int) | List of layer sizes for hyper-parameter tuning. Adjusts model linear layer architecture.  |
+| `device` | string | Device to train model and load images on (`cpu` or `cuda`).  |
+| `hyper_param_runs` | int | Number of parameter permutations to run for hyper-parameter tuning.  |
