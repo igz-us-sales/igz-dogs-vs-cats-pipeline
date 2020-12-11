@@ -7,7 +7,11 @@ functions:
 - url: PrepData.ipynb
   name: prep-data
   kind: job
-  image: docker-registry.default-tenant.app.us-sales.iguazio-cd2.com:80/s3_image
+  image: mlrun/ml-models-gpu
+- url: TrainModel.ipynb
+  name: train-model
+  kind: job
+  image: mlrun/ml-models-gpu
 workflows:
 - name: main
   path: workflow.py
