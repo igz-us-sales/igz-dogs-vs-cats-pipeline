@@ -12,6 +12,10 @@ functions:
   name: train-model
   kind: job
   image: mlrun/ml-models-gpu
+- url: EvalModel.ipynb
+  name: eval-model
+  kind: job
+  image: mlrun/ml-models-gpu
 workflows:
 - name: main
   path: workflow.py

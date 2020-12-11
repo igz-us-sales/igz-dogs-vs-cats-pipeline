@@ -86,5 +86,14 @@ def kfpipeline(bucket_name:str = config['aws']['bucket_name'],
               "device" : device}
     train_model = funcs['train-model'].as_step(handler="handler",
                                                inputs=inputs,
-                                               outputs=["model"],
+                                               outputs=["model", "results"],
                                                verbose=debug_logs)
+    
+    # Evaluate Model
+    inputs = {"test_data_loader" : prep_data.outputs["test_data_loader"],
+              "model" : train_model.outputs["model"],
+              "device" : device}
+    train_model = funcs['eval-model'].as_step(handler="handler",
+                                              inputs=inputs,
+                                              outputs=["results"],
+                                              verbose=debug_logs)
