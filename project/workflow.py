@@ -1,7 +1,7 @@
 
 import os
 from kfp import dsl
-from mlrun import mount_v3io
+from mlrun import mount_v3io, NewTask
 import yaml
 
 with open("config.yaml") as f:
@@ -25,7 +25,7 @@ def init_functions(functions: dict, project=None, secrets=None):
                             mount_path=config["data"]["mount_download_path"]))
     
     # Set env var configuation for S3 functions
-    s3_functions = ['download-s3']
+    s3_functions = ['download-s3', 'upload-s3']
     for func in s3_functions:
         functions[func].set_env('AWS_ACCESS_KEY_ID', config['aws']['aws_access_key_id'])
         functions[func].set_env('AWS_SECRET_ACCESS_KEY', config['aws']['aws_secret_access_key'])
@@ -41,18 +41,21 @@ def init_functions(functions: dict, project=None, secrets=None):
 def kfpipeline(bucket_name:str = config['aws']['bucket_name'],
                s3_images_csv:str = f'{config["csv"]["s3_images_csv_mount_path"]}/{config["csv"]["s3_images_csv"]}',
                data_download_path:str = config['data']['mount_download_path'],
-               download_data:bool=False,
-               batch_size:int = 32,
-               img_dimensions:int = 224,
-               train_pct:float = 0.6,
-               val_pct:float = 0.2,
-               test_pct:float = 0.2,
-               epochs:int = 1,
-               lr:float = 0.001,
-               device:str = "cpu",
-               debug_logs:bool=True):    
+               results_upload_path:str = config['aws']['results_upload_path'],
+               download_data:bool= config['data']['download_data'],
+               batch_size:int = config['data']['batch_size'],
+               img_dimensions:int = config['data']['img_dimensions'],
+               train_pct:float = config['data']['train_pct'],
+               val_pct:float = config['data']['val_pct'],
+               test_pct:float = config['data']['test_pct'],
+               epochs:int = config['train']['epochs'],
+               lr:list = config['train']['lr'],
+               layer_size:list = config['train']['layer_size'],
+               hyper_param_runs:int = config['train']['hyper_param_runs'],
+               device:str = config['train']['device'],
+               debug_logs:bool= config['project']['debug_logs']):    
     
-    # Download data
+    # Download Data from S3
     inputs = {"bucket_name" : bucket_name,
               "s3_images_csv" : s3_images_csv,
               "data_download_path" : data_download_path,
@@ -81,19 +84,32 @@ def kfpipeline(bucket_name:str = config['aws']['bucket_name'],
     inputs = {"train_data_loader" : prep_data.outputs["train_data_loader"],
               "validation_data_loader" : prep_data.outputs["train_data_loader"],
               "epochs" : epochs,
-              "lr" : lr,
-              "batch_size" : batch_size,
+              "batch_size": batch_size,
               "device" : device}
+    hyper_params = {'lr': lr,
+                    "layer_size" : layer_size,
+                    "MAX_EVALS": hyper_param_runs}
     train_model = funcs['train-model'].as_step(handler="handler",
                                                inputs=inputs,
-                                               outputs=["model", "results"],
+                                               hyperparams=hyper_params,
+                                               runspec=NewTask(tuning_strategy="random"),
+                                               selector="max.validation_accuracy",
+                                               outputs=["model"],
                                                verbose=debug_logs)
     
     # Evaluate Model
     inputs = {"test_data_loader" : prep_data.outputs["test_data_loader"],
               "model" : train_model.outputs["model"],
               "device" : device}
-    train_model = funcs['eval-model'].as_step(handler="handler",
-                                              inputs=inputs,
-                                              outputs=["results"],
-                                              verbose=debug_logs)
+    eval_model = funcs['eval-model'].as_step(handler="handler",
+                                             inputs=inputs,
+                                             verbose=debug_logs)
+    
+    # Upload Model/Metrics to S3
+    inputs = {"model" : train_model.outputs["model"],
+              "bucket_name" : bucket_name,
+              "results_upload_path" : results_upload_path}
+    upload_s3 = funcs['upload-s3'].as_step(handler="handler",
+                                           inputs=inputs,
+                                           verbose=debug_logs)
+    upload_s3.after(eval_model)

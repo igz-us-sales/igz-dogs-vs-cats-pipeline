@@ -16,6 +16,10 @@ functions:
   name: eval-model
   kind: job
   image: mlrun/ml-models-gpu
+- url: UploadS3.ipynb
+  name: upload-s3
+  kind: job
+  image: mlrun/ml-models-gpu
 workflows:
 - name: main
   path: workflow.py
