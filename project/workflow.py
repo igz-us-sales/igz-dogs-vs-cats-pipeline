@@ -14,8 +14,8 @@ funcs = {}
 # Configure function resources and local settings
 def init_functions(functions: dict, project=None, secrets=None):
     
-    # Mount V3IO filesystem
     for fn in functions.values():
+        # Mount V3IO filesystem
         fn.apply(mount_v3io())
         fn.apply(mount_v3io(name="csv",
                             remote=config["csv"]["s3_images_csv_remote_path"],
@@ -30,8 +30,15 @@ def init_functions(functions: dict, project=None, secrets=None):
         functions[func].set_env('AWS_ACCESS_KEY_ID', config['aws']['aws_access_key_id'])
         functions[func].set_env('AWS_SECRET_ACCESS_KEY', config['aws']['aws_secret_access_key'])
         functions[func].set_env('AWS_DEFAULT_REGION', config['aws']['aws_default_region'])
-        
-#     functions['train-model'].with_limits(gpus="1", gpu_type='nvidia.com/gpu')
+       
+    # Set GPU reources for model training
+    #functions['train-model'].with_limits(gpus="1", gpu_type='nvidia.com/gpu')
+
+    # Set resources for model deployment
+    functions["deploy-model"].spec.base_spec['spec']['build']['baseImage'] = "mlrun/ml-models-gpu"
+    functions["deploy-model"].spec.base_spec['spec']['loggerSinks'] = [{'level': 'info'}]
+    functions["deploy-model"].spec.min_replicas = 1
+    functions["deploy-model"].spec.max_replicas = 1
 
 # Create a Kubeflow Pipelines pipeline
 @dsl.pipeline(
@@ -104,6 +111,12 @@ def kfpipeline(bucket_name:str = config['aws']['bucket_name'],
     eval_model = funcs['eval-model'].as_step(handler="handler",
                                              inputs=inputs,
                                              verbose=debug_logs)
+    
+    # Deploy Model
+    env = {"model_url" : train_model.outputs["model"],
+           "device" : device,
+           "img_dimensions" : img_dimensions}
+    deploy = funcs['deploy-model'].deploy_step(env=env)
     
     # Upload Model/Metrics to S3
     inputs = {"model" : train_model.outputs["model"],

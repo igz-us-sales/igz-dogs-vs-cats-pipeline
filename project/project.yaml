@@ -16,6 +16,10 @@ functions:
   name: eval-model
   kind: job
   image: mlrun/ml-models-gpu
+- url: DeployModel.ipynb
+  name: deploy-model
+  kind: nuclio
+  image: mlrun/ml-models-gpu
 - url: UploadS3.ipynb
   name: upload-s3
   kind: job
