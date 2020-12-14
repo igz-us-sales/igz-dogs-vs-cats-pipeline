@@ -1,4 +1,4 @@
-# Dogs vs Cats Pipeline with Kubeflow, MLRun, PyTorch, and S3
+# Dogs vs Cats Pipeline with Kubeflow, MLRun, Nuclio, PyTorch, and S3
 ## Quick Links
 1. [Getting Started](#Getting-Started)
 2. [Inputs and Outputs](#Inputs-and-Outputs)
