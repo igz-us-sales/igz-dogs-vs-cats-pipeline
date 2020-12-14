@@ -48,6 +48,12 @@
    - Logs metrics to MLRun DB.
    - Attaches testing metrics to model in MLRunDB.
    
+### DeployModel
+   - Serverless model endpoint via Nuclio
+   - Initializes PyTorch model and loads state dict from previous pipeline components.
+   - Takes base64 encoded image and performs prediction using model.
+   - Sends back base64 encoded image with prediction.
+   
 ### UploadS3
 - Creates/uploads  `results.csv` with metrics/model info from MLRun DB.
 - Creates/uploads `model_state_dict.pth` with trained model parameters from MLRun DB.
