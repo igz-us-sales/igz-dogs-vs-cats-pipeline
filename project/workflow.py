@@ -7,8 +7,6 @@ import yaml
 with open("config.yaml") as f:
     config = yaml.safe_load(f)
 
-# image = f"docker-registry.{os.getenv('IGZ_NAMESPACE_DOMAIN')}:80/inference-benchmarking-demo"
-# image = "mlrun/mlrun"
 funcs = {}
 
 # Configure function resources and local settings
